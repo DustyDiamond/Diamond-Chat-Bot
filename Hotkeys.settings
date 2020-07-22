@@ -1,0 +1,24 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Diamond_Chat_Bot" GeneratedClassName="Hotkeys">
+  <Profiles />
+  <Settings>
+    <Setting Name="up1" Type="System.String" Scope="User">
+      <Value Profile="(Default)">2,107</Value>
+    </Setting>
+    <Setting Name="dn1" Type="System.String" Scope="User">
+      <Value Profile="(Default)">2,109</Value>
+    </Setting>
+    <Setting Name="up2" Type="System.String" Scope="User">
+      <Value Profile="(Default)">4,107</Value>
+    </Setting>
+    <Setting Name="dn2" Type="System.String" Scope="User">
+      <Value Profile="(Default)">4,109</Value>
+    </Setting>
+    <Setting Name="up3" Type="System.String" Scope="User">
+      <Value Profile="(Default)">1,107</Value>
+    </Setting>
+    <Setting Name="dn3" Type="System.String" Scope="User">
+      <Value Profile="(Default)">1,109</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
