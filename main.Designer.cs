@@ -136,9 +136,9 @@
             this.menuStrip2 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.infoToolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.startWebServiceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.channelSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.startWebServiceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox10.SuspendLayout();
@@ -1523,6 +1523,13 @@
             this.infoToolStripMenuItem2.Text = "Info";
             this.infoToolStripMenuItem2.Click += new System.EventHandler(this.infoToolStripMenuItem_Click);
             // 
+            // startWebServiceToolStripMenuItem
+            // 
+            this.startWebServiceToolStripMenuItem.Name = "startWebServiceToolStripMenuItem";
+            this.startWebServiceToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.startWebServiceToolStripMenuItem.Text = "Start Web Service";
+            this.startWebServiceToolStripMenuItem.Click += new System.EventHandler(this.startWebServiceToolStripMenuItem_Click);
+            // 
             // channelSettingsToolStripMenuItem
             // 
             this.channelSettingsToolStripMenuItem.Name = "channelSettingsToolStripMenuItem";
@@ -1536,13 +1543,6 @@
             this.exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
-            // 
-            // startWebServiceToolStripMenuItem
-            // 
-            this.startWebServiceToolStripMenuItem.Name = "startWebServiceToolStripMenuItem";
-            this.startWebServiceToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.startWebServiceToolStripMenuItem.Text = "Start Web Service";
-            this.startWebServiceToolStripMenuItem.Click += new System.EventHandler(this.startWebServiceToolStripMenuItem_Click);
             // 
             // main
             // 

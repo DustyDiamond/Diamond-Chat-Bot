@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.IO;
 using System.Windows.Forms;
 
 namespace Diamond_Chat_Bot
@@ -14,6 +12,12 @@ namespace Diamond_Chat_Bot
         [STAThread]
         static void Main()
         {
+            string path = Directory.GetCurrentDirectory().ToString();
+            Directory.CreateDirectory(path + "/bin/");
+            if (!File.Exists(path + "/bin/Diamond Chat Bot.exe"))
+            {
+                File.Copy(path + "/Diamond Chat Bot.exe", path + "/bin/Diamond Chat Bot.exe");
+            }
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new main());

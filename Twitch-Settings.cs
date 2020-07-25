@@ -28,7 +28,7 @@ namespace Diamond_Chat_Bot
             Twitch.Default.ChannelName = set_channel.Text;
             Twitch.Default.BotToken = "oauth:" + set_oauth.Text;
             Twitch.Default.Save();
-            MessageBox.Show("Diamond Chat Bot is now Restarting. \r\nPlease Wait.","Attention!", MessageBoxButtons.OK);
+            MessageBox.Show("Diamond Chat Bot has to be restarted manually. \r\nPlease Wait.","Attention!", MessageBoxButtons.OK);
             Close();
             Application.Restart();
             Environment.Exit(0);

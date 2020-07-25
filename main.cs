@@ -2,10 +2,11 @@
 using System.IO;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Net;
-using Nancy;
-
+using System.Net.Http;
+using System.Net.Http.Headers;
 
 namespace Diamond_Chat_Bot
 {
@@ -39,14 +40,14 @@ namespace Diamond_Chat_Bot
         public static IrcClient client;
         Pinger pinger;
         Exporter exporter;
-        Thread t, t1;
-        
+        Thread t,t1;
+        static HttpClient server;
 
         public main()
         {
             InitializeComponent();
 
-            
+
         }
 
         private void main_Load(object sender, System.EventArgs e)
@@ -54,8 +55,25 @@ namespace Diamond_Chat_Bot
             client = new IrcClient("irc.twitch.tv", 6667, Twitch.Default.BotName, Twitch.Default.BotToken, Twitch.Default.ChannelName);
             pinger = new Pinger(client);
             exporter = new Exporter();
-            
-            
+
+            //Get Web Frontend
+            string dcb_path = Directory.GetCurrentDirectory().ToString();
+            string remoteUri = "http://www.dustydiamond.de/dcb/dcb_web-frontend.html";
+            string fileName = "dcb_web-frontend.html";
+
+            WebClient myWebClient = new WebClient();
+            try
+            {
+                myWebClient.DownloadFile(remoteUri, fileName);
+            }
+            catch
+            {
+                //ignore
+            }
+
+            //Set up HttpCLient
+            server = new HttpClient();
+
 
             pinger.Start();
             exporter.Start();
@@ -63,14 +81,17 @@ namespace Diamond_Chat_Bot
             var reg = callOnlyOnce(RegHelper);
             reg();
 
-            t = new Thread(BotLoop);
+            t = new Thread(new ThreadStart(BotLoop));
             t.IsBackground = true;
             t.Start();
-            
+
+            t1 = new Thread(new ThreadStart(RunAsync().GetAwaiter().GetResult));
+            t1.IsBackground = true;
+            t1.Start();
 
             LoadSettings();
 
-            if(Twitch.Default.BotName == "" | Twitch.Default.ChannelName == "" | Twitch.Default.BotToken == "")
+            if (Twitch.Default.BotName == "" | Twitch.Default.ChannelName == "" | Twitch.Default.BotToken == "")
             {
                 var result = MessageBox.Show("Twitch Channel Settings missing.\r\nDo you want to add them now?\r\n\r\nI strongly recommend integrating Twitch for less bugs.", "Attention!", buttons: MessageBoxButtons.YesNo);
                 if (result == DialogResult.Yes)
@@ -80,6 +101,8 @@ namespace Diamond_Chat_Bot
                 }
             }
         }
+
+        #region Hotkey-specific
 
         //####################################################################
         //                      Hotkey Specific START
@@ -145,7 +168,7 @@ namespace Diamond_Chat_Bot
             key = int.Parse(hkdn.Substring(2, hkdn.Length - 2));
             RegisterChange(id, keyM, key);
         }
-        
+
         public void RegisterChange(int id, int keyM, int key)
         {
             bool ret = RegisterHotKey(Handle, id, keyM, key);
@@ -162,7 +185,7 @@ namespace Diamond_Chat_Bot
         {
             var hk = Hotkeys.Default;
             string temp = "";
-            
+
             //UP1
             c1_u_Alt.Checked = false;
             c1_u_Ctrl.Checked = false;
@@ -175,7 +198,7 @@ namespace Diamond_Chat_Bot
             hkup = "";
             if (keyM > 3) { c1_u_Shift.Checked = true; keyM -= 4; hkup += "Shift + "; }
             if (keyM > 1) { c1_u_Ctrl.Checked = true; keyM -= 2; hkup += "Ctrl + "; }
-            if (keyM ==1) { c1_u_Alt.Checked = true;  hkup += "Alt + "; }
+            if (keyM == 1) { c1_u_Alt.Checked = true; hkup += "Alt + "; }
 
             if (key > 90)
             {
@@ -198,7 +221,7 @@ namespace Diamond_Chat_Bot
             string hkdn = hk.dn1;
             keyM = int.Parse(hkdn.Substring(0, 1));
             key = int.Parse(hkdn.Substring(2, hkdn.Length - 2));
-            
+
             hkdn = "";
             if (keyM > 3) { c1_d_Shift.Checked = true; keyM -= 4; hkdn += "Shift + "; }
             if (keyM > 1) { c1_d_Ctrl.Checked = true; keyM -= 2; hkdn += "Ctrl + "; }
@@ -342,14 +365,14 @@ namespace Diamond_Chat_Bot
             if (c1_u_Alt.Checked) { keyM += 1; }
 
             key = Encoding.ASCII.GetBytes(s: tempKey);
-            if(key.Length >1 | key[0] < 48)
+            if (key.Length > 1 | key[0] < 48)
             {
                 key = CheckKey(tempKey);
             }
             UnRegisterChange(id);
             RegisterChange(id, keyM, key[0]);
             Hotkeys.Default.up1 = keyM.ToString() + "," + key[0];
-            
+
 
             //DOWN1
             id = 1;
@@ -555,12 +578,13 @@ namespace Diamond_Chat_Bot
                 }
             }
         }
-        
+
         //Action for RegHK only Calling once...
         Action callOnlyOnce(Action action)
         {
             var context = new ContextCallOnlyOnce();
-            Action ret = () => {
+            Action ret = () =>
+            {
                 if (false == context.AlreadyCalled)
                 {
                     action();
@@ -574,7 +598,9 @@ namespace Diamond_Chat_Bot
         //####################################################################
         //                      Hotkey Specific END
         //####################################################################
+        #endregion
 
+        #region Twitch-specific
 
         //####################################################################
         //               Twitch Chat specific Methods START
@@ -582,7 +608,7 @@ namespace Diamond_Chat_Bot
 
         public string[] GetMods()
         {
-            
+
             string[] mods = { };
             if (File.Exists("mods.txt"))
             {
@@ -590,7 +616,8 @@ namespace Diamond_Chat_Bot
                 mods_list.Items.Clear();
                 foreach (string line in mods)
                 {
-                    if (!line.StartsWith("#")) { 
+                    if (!line.StartsWith("#"))
+                    {
                         mods_list.Items.Add(line + "\r\n");
                     }
                 }
@@ -628,14 +655,15 @@ namespace Diamond_Chat_Bot
                 //Console.WriteLine("Reading Message...");
                 var message = client.ReadMessage();
 
-                if(message != null) { 
+                if (message != null)
+                {
 
                     //For Debugging Purposes
                     //Console.WriteLine($"Message: {message}");
                     message = message.ToLower();
                     foreach (string line in commands)
                     {
-                        if(message.Contains(line) == true)
+                        if (message.Contains(line) == true)
                         {
                             Console.WriteLine($"Message: {message}");
                             MessageHandler(message);
@@ -688,8 +716,8 @@ namespace Diamond_Chat_Bot
                     if (Array.Exists(mods, element => element == userName))
                     {
                         string time = DateTime.Now.ToString();
-                        mi = delegate () { chatBox.AppendText( time.Substring(11,time.Length-14) + ": " + userName + ": " + message + "\r\n"); };
-                        if (Twitch.Default.BotModeInternal > 1) {Invoke(mi); }
+                        mi = delegate () { chatBox.AppendText(time.Substring(11, time.Length - 14) + ": " + userName + ": " + message + "\r\n"); };
+                        if (Twitch.Default.BotModeInternal > 1) { Invoke(mi); }
 
                         switch (lineNumber)
                         {
@@ -729,18 +757,19 @@ namespace Diamond_Chat_Bot
                                         }
                                         else
                                         {
-                                            
+
                                         }
                                     }
                                     catch
                                     {
-                                        mi = delegate () {
+                                        mi = delegate ()
+                                        {
                                             chatBox.AppendText("Hoppala! Da ist was schief gelaufen...");
                                         };
                                         Invoke(mi);
                                     }
                                 }
-                                else if(message.Length < 7)
+                                else if (message.Length < 7)
                                 {
                                     CountUp(1);
                                 }
@@ -756,7 +785,8 @@ namespace Diamond_Chat_Bot
                                     }
                                     else
                                     {
-                                        mi = delegate () {
+                                        mi = delegate ()
+                                        {
                                             chatBox.AppendText("Hoppala! Da ist was schief gelaufen...");
                                         };
                                         Invoke(mi);
@@ -779,9 +809,11 @@ namespace Diamond_Chat_Bot
                                     modeNow = 0;
                                 }
                                 Twitch.Default.BotModeTwitch = modeNow;
-                                mi = delegate () { loadBotLevels(); 
-                                if (Twitch.Default.BotModeTwitch > 0) { client.SendChatMessage("Bot Silent Mode is now " + modeNow + "\r\n"); }
-                                if (Twitch.Default.BotModeInternal > 0) { chatBox.AppendText("Bot Silent Mode is now " + modeNow + "\r\n"); }
+                                mi = delegate ()
+                                {
+                                    loadBotLevels();
+                                    if (Twitch.Default.BotModeTwitch > 0) { client.SendChatMessage("Bot Silent Mode is now " + modeNow + "\r\n"); }
+                                    if (Twitch.Default.BotModeInternal > 0) { chatBox.AppendText("Bot Silent Mode is now " + modeNow + "\r\n"); }
                                 };
                                 Invoke(mi);
                                 break;
@@ -796,11 +828,13 @@ namespace Diamond_Chat_Bot
                 }
             }
         }
-        
+
         //####################################################################
         //               Twitch Chat specific Methods END
         //####################################################################
+        #endregion
 
+        #region Counter-specific
 
         //####################################################################
         //                  Counter specific Methods START
@@ -818,7 +852,7 @@ namespace Diamond_Chat_Bot
             c3_NameC.Items.Clear();
             c3_NameC.Items.AddRange(counters);
         }
-        
+
         //Counter 1
         private void c1_NameC_SelectedIndexChanged(object sender, System.EventArgs e)
         {
@@ -950,7 +984,7 @@ namespace Diamond_Chat_Bot
             c2_NameC.SelectedIndex = -1;
 
         }
-        
+
         //Counter 3
         private void c3_NameC_SelectedIndexChanged(object sender, System.EventArgs e)
         {
@@ -1019,7 +1053,7 @@ namespace Diamond_Chat_Bot
 
 
         //Counting Counters
-        public void CountUp(int nr,  int amount = 1)
+        public void CountUp(int nr, int amount = 1)
         {
             MethodInvoker mi;
             switch (nr)
@@ -1103,6 +1137,101 @@ namespace Diamond_Chat_Bot
         //####################################################################
         //                  Counter specific Methods END
         //####################################################################
+
+        #endregion
+
+        #region Web-Interface
+
+
+
+        public void web_count1_up()
+        {
+            CountUp(1);
+        }
+
+        public void web_counter()
+        {
+
+        }
+
+        #endregion
+
+        #region Web-Client
+
+        static void ShowCounter(Counter counter)
+        {
+            Console.WriteLine($"Name: {counter.Name}\t Text: {counter.Text} : {counter.Count}");
+        }
+
+        static async Task<Uri> CreateCounterAsync(Counter counter)
+        {
+            HttpResponseMessage response = await server.PostAsJsonAsync("api/counters", counter);
+            response.EnsureSuccessStatusCode();
+
+            //return Uri of the created counter
+            return response.Headers.Location;
+        }
+
+        static async Task<Counter> GetCounterAsync(string path)
+        {
+            Counter counter = null;
+            HttpResponseMessage response = await server.GetAsync(path);
+            if (response.IsSuccessStatusCode)
+            {
+                counter = await response.Content.ReadAsAsync<Counter>();
+            }
+            return counter;
+        }
+
+        static async Task<Counter> UpdateCounterAsync(Counter counter)
+        {
+            HttpResponseMessage response = await server.PutAsJsonAsync($"api/counters/{counter.ID}", counter);
+            response.EnsureSuccessStatusCode();
+
+            counter = await response.Content.ReadAsAsync<Counter>();
+            return counter;
+        }
+
+        static async Task<HttpStatusCode> DeleteCounterAsync(string id)
+        {
+            HttpResponseMessage response = await server.DeleteAsync($"api/counters/{id}");
+            return response.StatusCode;
+        }
+
+
+        static async Task RunAsync()
+        {
+            // Update port # in the following line.
+            server.BaseAddress = new Uri("http://localhost:8080/");
+            server.DefaultRequestHeaders.Accept.Clear();
+            server.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+
+            Counter counter_1 = new Counter
+            {
+                ID = counter1.Default.ID,
+                Name = counter1.Default.Name,
+                Text = counter1.Default.Text,
+                Game = counter1.Default.Game,
+                Count = counter1.Default.Count
+            };
+
+            try
+            {
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+        }
+
+
+
+        #endregion
+
+        #region Misc
 
         private void LoadSettings()
         {
@@ -1218,6 +1347,10 @@ namespace Diamond_Chat_Bot
             Twitch.Default.Save();
         }
 
+        #endregion
+
+        #region Toolstrip
+
         private void infoToolStripMenuItem_Click(object sender, EventArgs e)
         {
             MessageBox.Show("© 2020 by DustyDiamond \r\nContact: julian@dustydiamond.de \r\nDiscord: DustyDiamond#5227");
@@ -1244,12 +1377,26 @@ namespace Diamond_Chat_Bot
         private void startWebServiceToolStripMenuItem_Click(object sender, EventArgs e)
         {
             
-            MessageBox.Show("Nancy gestartet...");
-            
         }
+
+        #endregion
+
+
     }
+
     class ContextCallOnlyOnce
     {
         public bool AlreadyCalled;
     }
+
+    public class Counter
+    {
+        public int ID { get; set; }
+        public string Name { get; set; }
+        public string Game { get; set; }
+        public string Text { get; set; }
+        public int Count { get; set; }
+        
+    }
+    
 }
