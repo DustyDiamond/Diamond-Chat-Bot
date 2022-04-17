@@ -1,6 +1,7 @@
 # Diamond Chatbot
 
-![GitHub release (release name instead of tag name)](https://img.shields.io/github/v/release/DustyDiamond/Diamond-Chat-Bot/tree/dev?include_prereleases&sort=date) ![GitHub](https://img.shields.io/github/license/DustyDiamond/Diamond-Chat-Bot)
+## DEV Branch for V2.0
+## Use at own risk!
 
 Diamond Chatbot (DCB) is a simple small Counter Program with Twitch integration.  
 You can store as many counters as you whish, accessing three counters at the same time. For every counter you can set your own keybinds, name and display text.  
