@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32407.343
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiamondChatBot", "DiamondChatBot\DiamondChatBot.csproj", "{1D26C50A-0A02-4EF6-9778-89D027C42315}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1D26C50A-0A02-4EF6-9778-89D027C42315}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D26C50A-0A02-4EF6-9778-89D027C42315}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D26C50A-0A02-4EF6-9778-89D027C42315}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D26C50A-0A02-4EF6-9778-89D027C42315}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {54A0FFB7-C78A-4BC0-81E8-9826F704E7AC}
+	EndGlobalSection
+EndGlobal
